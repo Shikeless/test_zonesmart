@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Route, Redirect } from "react-router-dom";
 import { connect } from "react-redux";
-import { load } from "../../localStorage";
+import { getIsAuthorized } from "../../modules/Auth";
 
 class PrivateRoute extends Component {
     renderRoute = routeProps => {
@@ -19,4 +19,7 @@ class PrivateRoute extends Component {
     }
 }
 
-export default PrivateRoute;
+export default connect(
+    state => ({ isAuthorized: getIsAuthorized(state) }),
+    null
+)(PrivateRoute);

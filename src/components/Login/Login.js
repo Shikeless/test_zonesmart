@@ -1,12 +1,12 @@
 import React, { PureComponent } from "react";
-import styles from "./Login.module.css";
-import { load } from "../../localStorage";
-import { connect } from "react-redux";
-import { authRequest, verRequest } from "../../modules/Auth/actions";
 import { Redirect } from "react-router-dom";
+import { connect } from "react-redux";
+import { load } from "../../localStorage";
+import { authRequest, verRequest } from "../../modules/Auth/actions";
+import { getIsAuthorized, getAuthError } from "../../modules/Auth/auth";
+import styles from "./Login.module.css";
 import { Button, Form, FormGroup, Label, Input, Alert } from "reactstrap";
 import "bootstrap/dist/css/bootstrap.css";
-import { getIsAuthorized, getAuthError } from "../../modules/Auth/auth";
 
 const MapStateToProps = state => ({
     isAuthorized: getIsAuthorized(state),
@@ -51,9 +51,7 @@ class Login extends PureComponent {
         const {
             values: { email, password }
         } = this.state;
-        const { authRequest } = this.props;
-        authRequest({ email, password });
-        this.forceUpdate();
+        this.props.authRequest({ email, password });
     };
 
     render() {
@@ -82,7 +80,7 @@ class Login extends PureComponent {
                         onClick={this.handleSubmit}
                         className={styles.formElement}
                     >
-                        Submit
+                        Войти
                     </Button>
                 </Form>
                 <div></div>

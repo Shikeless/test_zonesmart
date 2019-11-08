@@ -7,7 +7,8 @@ import {
     authFailure,
     refFailure,
     refRequest,
-    verSuccess
+    verSuccess,
+    logout
 } from "./actions";
 
 const isAuthorized = handleActions(
@@ -15,7 +16,8 @@ const isAuthorized = handleActions(
         [authSuccess]: () => true,
         [refSuccess]: () => true,
         [verSuccess]: () => true,
-        [refFailure]: () => false
+        [refFailure]: () => false,
+        [logout]: () => false
     },
     false
 );

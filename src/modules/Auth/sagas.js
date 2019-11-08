@@ -9,7 +9,7 @@ import {
 import { fetchAuth, fetchVerifyToken, fetchRefreshToken } from "./api.js";
 import { save } from "../../localStorage";
 
-function* fetchNWatcher(action) {
+function* fetchAuthWatcher(action) {
     yield takeLatest(authRequest, authRequestFlow);
     yield takeLatest(verRequest, verRequestFlow);
 }
@@ -32,7 +32,7 @@ export function* verRequestFlow(action) {
     try {
         const verification = yield call(fetchVerifyToken);
         if (verification) {
-            console.log("access is fresh");
+            console.log("access token is fresh");
             yield put(authSuccess());
         }
     } catch (error) {
@@ -40,17 +40,19 @@ export function* verRequestFlow(action) {
             try {
                 console.log("access is expired");
                 const tokens = yield call(fetchRefreshToken);
+                console.log("new access token added");
                 yield call(save, "access", tokens.access);
                 yield put(authSuccess());
             } catch (error) {
-                yield call(localStorage.removeItem("access"));
-                yield call(localStorage.removeItem("refresh"));
-                yield put(refFilure());
+                if (error.message === "Request failed with status code 401") {
+                    console.log("error to refresh token, logout");
+                    yield put(refFailure());
+                }
             }
         }
     }
 }
 
 export default function*() {
-    yield fork(fetchNWatcher);
+    yield fork(fetchAuthWatcher);
 }

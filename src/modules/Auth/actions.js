@@ -11,3 +11,5 @@ export const refFailure = createAction("REF/FAILURE");
 export const verRequest = createAction("VER/REQUEST");
 export const verSuccess = createAction("VER/SUCCESS");
 export const verFailure = createAction("VER/FAILURE");
+
+export const logout = createAction("LOGOUT");

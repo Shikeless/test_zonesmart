@@ -1,55 +1,177 @@
 import React from "react";
-import styles from "./Products.module.css";
-import { load } from "../../localStorage";
 import { connect } from "react-redux";
-import { authRequest, verRequest } from "../../modules/Auth/actions";
-// import { getAccesToken, getRefreshToken } from "../../modules/Auth/auth";
+import { load } from "../../localStorage";
+import { verRequest, logout } from "../../modules/Auth/actions";
+import { getIsAuthorized } from "../../modules/Auth/auth";
+import {
+    channelsRequest,
+    categoriesRequest,
+    aspectsRequest
+} from "../../modules/Marketplace/actions";
+import {
+    getMarketplaceChannels,
+    getMarketplaceError,
+    getMarketplaceResults,
+    getAspects
+} from "../../modules/Marketplace/marketplace";
+import styles from "./Products.module.css";
+import {
+    Dropdown,
+    DropdownToggle,
+    DropdownMenu,
+    DropdownItem,
+    Table,
+    Input,
+    Label,
+    Button
+} from "reactstrap";
+import "bootstrap/dist/css/bootstrap.css";
 
 const MapStateToProps = state => ({
-    // access: getAccesToken(state),
-    // refresh: getRefreshToken(state)
+    aspects: getAspects(state),
+    searchResults: getMarketplaceResults(state),
+    channels: getMarketplaceChannels(state),
+    isAuthorized: getIsAuthorized(state),
+    error: getMarketplaceError(state)
 });
 
-const MapDispatchToProps = { authRequest, verRequest };
+const MapDispatchToProps = {
+    verRequest,
+    channelsRequest,
+    categoriesRequest,
+    aspectsRequest,
+    logout
+};
 
 class Products extends React.Component {
-    state = { inputValue: "" };
+    state = { dropdownIsOpen: false };
 
     componentDidMount() {
-        // if (this.props.isAuthorized === false) {
-        //     this.props.verRequest();
-        // }
+        if (load("access" !== null)) this.props.verRequest();
+        this.props.channelsRequest();
     }
 
-    handleChange = event => {
-        const { inputValue } = this.state;
+    toggle = () => {
+        const { dropdownIsOpen } = this.state;
         this.setState({
-            inputValue: event.target.value
+            dropdownIsOpen: !this.state.dropdownIsOpen
         });
     };
 
-    handleKeyPress = event => {
-        if (event.key === "Enter") {
-            this.props.test(this.state.inputValue);
-        }
+    logout = () => {
+        localStorage.removeItem("access");
+        this.props.logout();
     };
 
-    handleClick = event => {
-        this.props.authRequest();
+    getCategories = event => {
+        this.props.categoriesRequest(event.target.id);
     };
 
-    Verify = event => {
-        this.props.verRequest();
+    getProductInfo = event => {
+        this.props.aspectsRequest(event.target.parentElement.id);
     };
 
     render() {
-        const { access, refresh } = this.props;
+        const { channels, searchResults, aspects } = this.props;
         return (
             <>
-                <div>
-                    <button onClick={this.handleClick}>Кнопка</button>
-                    <button onClick={this.Verify}>Varify</button>
-                </div>
+                <Button className={styles.button} onClick={this.logout}>
+                    Logout
+                </Button>
+                <Dropdown
+                    isOpen={this.state.dropdownIsOpen}
+                    toggle={this.toggle}
+                >
+                    <DropdownToggle className={styles.button} caret>
+                        Channels
+                    </DropdownToggle>
+                    <DropdownMenu>
+                        {channels &&
+                            channels.map((item, index) => (
+                                <DropdownItem
+                                    key={index}
+                                    id={item.channel}
+                                    onClick={this.getCategories}
+                                >
+                                    {item.name}
+                                </DropdownItem>
+                            ))}
+                    </DropdownMenu>
+                </Dropdown>
+                <>
+                    {searchResults.length > 0 && (
+                        <div className={styles.searchResultWindow}>
+                            <Table striped>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>
+                                            {Object.keys(searchResults[0])[4]}
+                                        </th>
+                                        <th>
+                                            {Object.keys(searchResults[0])[1]}
+                                        </th>
+                                        <th>
+                                            {Object.keys(searchResults[0])[2]}
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {searchResults &&
+                                        searchResults.map((item, index) => (
+                                            <tr
+                                                onClick={this.getProductInfo}
+                                                key={index}
+                                                id={item.id}
+                                            >
+                                                <th scope="row">{index}</th>
+                                                <td>{item.name}</td>
+                                                <td>{item.category_id}</td>
+                                                <td>{item.parent_id}</td>
+                                            </tr>
+                                        ))}
+                                </tbody>
+                            </Table>
+                        </div>
+                    )}
+                </>
+                <>
+                    {aspects.length > 0 && (
+                        <div className={styles.aspectsWindow}>
+                            {aspects &&
+                                aspects.map((item, index) => (
+                                    <div key={index} className={styles.input}>
+                                        <Label>
+                                            <b>{item.localizedAspectName}</b>
+                                        </Label>
+                                        {item.aspectMode ===
+                                        "SELECTION_ONLY" ? (
+                                            <Input type="select">
+                                                {item.aspectValues &&
+                                                    item.aspectValues.map(
+                                                        (item, index) => (
+                                                            <React.Fragment
+                                                                key={index}
+                                                            >
+                                                                <option>
+                                                                    {item}
+                                                                </option>
+                                                            </React.Fragment>
+                                                        )
+                                                    )}
+                                            </Input>
+                                        ) : (
+                                            <Input
+                                                placeholder={
+                                                    item.localizedAspectName
+                                                }
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+                        </div>
+                    )}
+                </>
             </>
         );
     }
