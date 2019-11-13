@@ -11,3 +11,5 @@ export const categoriesFailure = createAction("CAT/FAILURE");
 export const aspectsRequest = createAction("ASPECTS/REQUEST");
 export const aspectsSuccess = createAction("ASPECTS/SUCCESS");
 export const aspectsFailure = createAction("ASPECTS/FAILURE");
+
+export const clearSublevel = createAction("CAT/CLEARSUBLEVEL");
